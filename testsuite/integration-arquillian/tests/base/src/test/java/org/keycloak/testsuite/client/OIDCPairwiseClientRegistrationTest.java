@@ -19,6 +19,7 @@ package org.keycloak.testsuite.client;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.jboss.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.admin.client.resource.ClientResource;
@@ -28,6 +29,8 @@ import org.keycloak.client.registration.ClientRegistrationException;
 import org.keycloak.client.registration.HttpErrorException;
 import org.keycloak.protocol.oidc.mappers.SHA256PairwiseSubMapper;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.representations.IDToken;
+import org.keycloak.representations.RefreshToken;
 import org.keycloak.representations.UserInfo;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientInitialAccessPresentation;
@@ -52,6 +55,8 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 public class OIDCPairwiseClientRegistrationTest extends AbstractClientRegistrationTest {
+
+    private static final Logger logger = Logger.getLogger(OIDCPairwiseClientRegistrationTest.class);
 
     @Before
     public void before() throws Exception {
@@ -349,6 +354,32 @@ public class OIDCPairwiseClientRegistrationTest extends AbstractClientRegistrati
         } finally {
             jaxrsClient.close();
         }
+
+        logger.debugf("public sub:   %s", user.getId());
+        logger.debugf("pairwise sub: %s", pairwiseUserId);
+
+        String idTokenString = accessTokenResponse.getIdToken();
+        IDToken idToken = oauth.verifyIDToken(idTokenString);
+        OAuthClient.AccessTokenResponse refreshTokenResponse = oauth.doRefreshTokenRequest(accessTokenResponse.getRefreshToken(), pairwiseClient.getClientSecret());
+        AccessToken refreshedToken = oauth.verifyToken(refreshTokenResponse.getAccessToken());
+        RefreshToken refreshedRefreshToken = oauth.verifyRefreshToken(refreshTokenResponse.getRefreshToken());
+        IDToken refreshedIdToken = oauth.verifyIDToken(refreshTokenResponse.getIdToken());
+
+        // If an ID Token is returned as a result of a token refresh request, the following requirements apply:
+        // its iss Claim Value MUST be the same as in the ID Token issued when the original authentication occurred
+        Assert.assertEquals(idToken.getIssuer(), refreshedRefreshToken.getIssuer());
+        // its sub Claim Value MUST be the same as in the ID Token issued when the original authentication occurred
+        Assert.assertEquals(idToken.getSubject(), refreshedRefreshToken.getSubject());
+        // its iat Claim MUST represent the time that the new ID Token is issued
+        Assert.assertEquals(refreshedIdToken.getIssuedAt(), refreshedRefreshToken.getIssuedAt());
+        // its aud Claim Value MUST be the same as in the ID Token issued when the original authentication occurred
+        Assert.assertArrayEquals(idToken.getAudience(), refreshedRefreshToken.getAudience());
+        // if the ID Token contains an auth_time Claim, its value MUST represent the time of the original authentication
+        // - not the time that the new ID token is issued
+        Assert.assertEquals(idToken.getAuthTime(), refreshedIdToken.getAuthTime());
+        // its azp Claim Value MUST be the same as in the ID Token issued when the original authentication occurred; if
+        // no azp Claim was present in the original ID Token, one MUST NOT be present in the new ID Token
+        Assert.assertEquals(idToken.getIssuedFor(), refreshedIdToken.getIssuedFor());
     }
 
     private String getPayload(String token) {

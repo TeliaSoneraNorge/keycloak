@@ -120,20 +120,14 @@ public class TokenManager {
     }
 
     public TokenValidation validateToken(KeycloakSession session, UriInfo uriInfo, ClientConnection connection, RealmModel realm, AccessToken oldToken, HttpHeaders headers) throws OAuthErrorException {
-        UserModel user = session.users().getUserById(oldToken.getSubject(), realm);
-        if (user == null) {
-            throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Invalid refresh token", "Unknown user");
-        }
 
-        if (!user.isEnabled()) {
-            throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "User disabled", "User disabled");
-        }
 
         UserSessionModel userSession = null;
         if (TokenUtil.TOKEN_TYPE_OFFLINE.equals(oldToken.getType())) {
 
             UserSessionManager sessionManager = new UserSessionManager(session);
             userSession = sessionManager.findOfflineUserSession(realm, oldToken.getSessionState());
+
             if (userSession != null) {
 
                 // Revoke timeouted offline userSession
@@ -154,6 +148,15 @@ public class TokenManager {
 
         if (userSession == null) {
             throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Offline user session not found", "Offline user session not found");
+        }
+
+        UserModel user = userSession.getUser();
+        if (user == null) {
+            throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Invalid refresh token", "Unknown user");
+        }
+
+        if (!user.isEnabled()) {
+            throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "User disabled", "User disabled");
         }
 
         ClientModel client = session.getContext().getClient();
