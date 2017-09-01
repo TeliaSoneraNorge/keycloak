@@ -209,14 +209,6 @@ public class TokenManager {
             return false;
         }
 
-        UserModel user = session.users().getUserById(token.getSubject(), realm);
-        if (user == null) {
-            return false;
-        }
-        if (!user.isEnabled()) {
-            return false;
-        }
-
         UserSessionModel userSession =  session.sessions().getUserSession(realm, token.getSessionState());
         if (!AuthenticationManager.isSessionValid(realm, userSession)) {
             return false;
@@ -224,6 +216,13 @@ public class TokenManager {
 
         ClientSessionModel clientSession = session.sessions().getClientSession(realm, token.getClientSession());
         if (clientSession == null) {
+            return false;
+        }
+        UserModel user = userSession.getUser();
+        if (user == null) {
+            return false;
+        }
+        if (!user.isEnabled()) {
             return false;
         }
 
