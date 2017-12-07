@@ -57,6 +57,7 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.utils.OIDCResponseMode;
 import org.keycloak.protocol.oidc.utils.OIDCResponseType;
 import org.keycloak.services.ErrorPage;
+import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
@@ -325,6 +326,10 @@ public class LoginActionsService {
                                  @QueryParam("execution") String execution) {
         event.event(EventType.LOGIN);
 
+        if (code == null) {
+            return ErrorResponse.error("code missing", Response.Status.BAD_REQUEST);
+        }
+
         ClientSessionModel clientSession = ClientSessionCode.getClientSession(code, session, realm);
         if (clientSession != null && code.equals(clientSession.getNote(LAST_PROCESSED_CODE))) {
             // Allow refresh of previous page
@@ -382,6 +387,9 @@ public class LoginActionsService {
     public Response authenticateForm(@QueryParam("code") String code,
                                      @QueryParam("execution") String execution) {
         event.event(EventType.LOGIN);
+        if (code == null) {
+            return ErrorResponse.error("code missing", Response.Status.BAD_REQUEST);
+        }
 
         ClientSessionModel clientSession = ClientSessionCode.getClientSession(code, session, realm);
         if (clientSession != null && code.equals(clientSession.getNote(LAST_PROCESSED_CODE))) {
