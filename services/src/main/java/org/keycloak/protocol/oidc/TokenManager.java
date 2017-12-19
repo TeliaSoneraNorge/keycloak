@@ -766,11 +766,11 @@ public class TokenManager {
                     throw new ErrorResponseException("not_allowed", "Offline tokens not allowed for the user or client", Response.Status.BAD_REQUEST);
                 }
 
-                refreshToken = new RefreshToken(accessToken);
+                refreshToken = new RefreshToken(accessToken, realm.isShortenRefreshToken());
                 refreshToken.type(TokenUtil.TOKEN_TYPE_OFFLINE);
                 sessionManager.createOrUpdateOfflineSession(clientSession, userSession);
             } else {
-                refreshToken = new RefreshToken(accessToken);
+                refreshToken = new RefreshToken(accessToken, realm.isShortenRefreshToken());
                 refreshToken.expiration(getRefreshExpiration());
             }
             refreshToken.id(KeycloakModelUtils.generateId());

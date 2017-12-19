@@ -75,6 +75,7 @@ public class CachedRealm extends AbstractExtendableRevisioned {
     //--- end brute force settings
 
     protected boolean revokeRefreshToken;
+    protected boolean shortenRefreshToken;
     protected int refreshTokenMaxReuse;
     protected int ssoSessionIdleTimeout;
     protected int ssoSessionMaxLifespan;
@@ -173,6 +174,7 @@ public class CachedRealm extends AbstractExtendableRevisioned {
         //--- end brute force settings
 
         revokeRefreshToken = model.isRevokeRefreshToken();
+        shortenRefreshToken = model.isShortenRefreshToken();
         refreshTokenMaxReuse = model.getRefreshTokenMaxReuse();
         ssoSessionIdleTimeout = model.getSsoSessionIdleTimeout();
         ssoSessionMaxLifespan = model.getSsoSessionMaxLifespan();
@@ -377,6 +379,10 @@ public class CachedRealm extends AbstractExtendableRevisioned {
 
     public boolean isRevokeRefreshToken() {
         return revokeRefreshToken;
+    }
+
+    public boolean isShortenRefreshToken() {
+        return shortenRefreshToken;
     }
 
     public int getRefreshTokenMaxReuse() {
