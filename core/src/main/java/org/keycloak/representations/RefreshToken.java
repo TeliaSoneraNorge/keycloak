@@ -38,7 +38,7 @@ public class RefreshToken extends AccessToken {
      *
      * @param token
      */
-    public RefreshToken(AccessToken token) {
+    public RefreshToken(AccessToken token, boolean shortenRefreshToken) {
         this();
         this.issuer = token.issuer;
         this.subject = token.subject;
@@ -46,10 +46,10 @@ public class RefreshToken extends AccessToken {
         this.sessionState = token.sessionState;
         this.nonce = token.nonce;
         this.audience = token.audience;
-        if (token.realmAccess != null) {
+        if (token.realmAccess != null && !shortenRefreshToken) {
             realmAccess = token.realmAccess.clone();
         }
-        if (token.resourceAccess != null) {
+        if (token.resourceAccess != null & !shortenRefreshToken) {
             resourceAccess = new HashMap<String, Access>();
             for (Map.Entry<String, Access> entry : token.resourceAccess.entrySet()) {
                 resourceAccess.put(entry.getKey(), entry.getValue().clone());

@@ -421,6 +421,16 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     }
 
     @Override
+    public boolean isShortenRefreshToken() {
+        return realm.isShortenRefreshToken();
+    }
+
+    @Override
+    public void setShortenRefreshToken(boolean shortenRefreshToken) {
+        realm.setShortenRefreshToken(shortenRefreshToken);
+    }
+
+    @Override
     public boolean isRevokeRefreshToken() {
         return realm.isRevokeRefreshToken();
     }

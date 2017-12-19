@@ -378,6 +378,18 @@ public class RealmAdapter implements CachedRealmModel {
     }
 
     @Override
+    public boolean isShortenRefreshToken() {
+        if (isUpdated()) return updated.isShortenRefreshToken();
+        return cached.isShortenRefreshToken();
+    }
+
+    @Override
+    public void setShortenRefreshToken(boolean shortenRefreshToken) {
+        getDelegateForUpdate();
+        updated.setShortenRefreshToken(shortenRefreshToken);
+    }
+
+    @Override
     public int getSsoSessionIdleTimeout() {
         if (isUpdated()) return updated.getSsoSessionIdleTimeout();
         return cached.getSsoSessionIdleTimeout();
